@@ -1,0 +1,9 @@
+
+body{margin:0;background:#020617;color:#7df9ff;font-family:Arial}
+.app{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.core{width:180px;height:180px;border:3px solid #7df9ff;border-radius:50%;animation:spin 10s linear infinite;box-shadow:0 0 40px #7df9ff}
+.grid{display:grid;grid-template-columns:repeat(2,260px);gap:16px;margin-top:30px}
+.card{padding:16px;border:1px solid #7df9ff;border-radius:12px}
+.on{box-shadow:0 0 20px #00ff88}
+.off{opacity:.5}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}

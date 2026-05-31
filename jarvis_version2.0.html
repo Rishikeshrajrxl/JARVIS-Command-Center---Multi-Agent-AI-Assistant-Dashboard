@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Agent Command Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#FFD700;--gold2:#FFA500;--gold3:#FFEC6E;
+  --dark:#050810;--dark2:#0A1020;--dark3:#0D1530;
+  --blue:#00BFFF;--cyan:#00FFFF;--dim:#1a2540;
+}
+body{background:var(--dark);color:var(--gold);font-family:'Rajdhani',sans-serif;overflow:hidden;height:100vh;width:100vw;}
+
+/* ===================== SCREEN MANAGER ===================== */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.8s;}
+.screen.active{opacity:1;pointer-events:all;}
+
+/* ===================== BACKGROUND PARTICLES ===================== */
+#bg-canvas{position:fixed;inset:0;z-index:0;}
+
+/* ===================== SCREEN 1 ===================== */
+#s1{z-index:10;background:radial-gradient(ellipse at center, #0d1b3e 0%, #050810 70%);}
+.s1-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,215,0,0.04) 1px, transparent 1px),linear-gradient(90deg, rgba(255,215,0,0.04) 1px, transparent 1px);background-size:60px 60px;animation:gridPulse 4s ease-in-out infinite;}
+@keyframes gridPulse{0%,100%{opacity:0.5}50%{opacity:1}}
+.s1-rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(255,215,0,0.12);animation:ringExpand 4s ease-out infinite;}
+.ring:nth-child(1){width:200px;height:200px;animation-delay:0s;}
+.ring:nth-child(2){width:400px;height:400px;animation-delay:1s;}
+.ring:nth-child(3){width:600px;height:600px;animation-delay:2s;}
+.ring:nth-child(4){width:800px;height:800px;animation-delay:3s;}
+@keyframes ringExpand{0%{transform:scale(0.8);opacity:0}50%{opacity:0.6}100%{transform:scale(1.1);opacity:0}}
+
+.jarvis-title{font-family:'Orbitron',sans-serif;font-size:clamp(5rem,15vw,10rem);font-weight:900;color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,0.8),0 0 80px rgba(255,215,0,0.4),0 0 120px rgba(255,215,0,0.2);letter-spacing:0.3em;animation:titleGlow 2s ease-in-out infinite alternate;position:relative;z-index:2;}
+@keyframes titleGlow{from{text-shadow:0 0 30px rgba(255,215,0,0.6),0 0 60px rgba(255,215,0,0.3)}to{text-shadow:0 0 60px rgba(255,215,0,1),0 0 100px rgba(255,215,0,0.6),0 0 150px rgba(255,215,0,0.3)}}
+
+.protocol-box{margin-top:3rem;border:1px solid var(--gold);padding:1.5rem 3rem;position:relative;z-index:2;background:rgba(255,215,0,0.05);backdrop-filter:blur(4px);}
+.protocol-box::before,.protocol-box::after{content:'';position:absolute;width:20px;height:20px;border-color:var(--gold);border-style:solid;}
+.protocol-box::before{top:-2px;left:-2px;border-width:2px 0 0 2px;}
+.protocol-box::after{bottom:-2px;right:-2px;border-width:0 2px 2px 0;}
+.protocol-text{font-family:'Orbitron',sans-serif;font-size:1.1rem;letter-spacing:0.3em;color:var(--gold3);text-align:center;animation:blink 1.5s step-end infinite;}
+.protocol-scan{width:100%;height:2px;background:linear-gradient(90deg, transparent, var(--gold), transparent);position:absolute;top:0;left:0;animation:scanLine 2s linear infinite;}
+@keyframes scanLine{from{top:0}to{top:100%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ===================== SCREEN 2 ===================== */
+#s2{z-index:10;background:radial-gradient(ellipse at center, #0a1525 0%, #050810 70%);}
+.s2-hex{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M30 2 L58 17 L58 35 L30 50 L2 35 L2 17Z' fill='none' stroke='rgba(255,215,0,0.06)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 52px;}
+
+.login-arc{width:180px;height:180px;position:relative;margin-bottom:1rem;}
+.arc-inner{width:180px;height:180px;border-radius:50%;border:3px solid transparent;border-top:3px solid var(--gold);border-right:3px solid var(--gold2);animation:spin 2s linear infinite;display:flex;align-items:center;justify-content:center;}
+.arc-inner2{width:140px;height:140px;border-radius:50%;border:2px solid transparent;border-bottom:2px solid var(--gold);border-left:2px solid var(--gold3);animation:spin 1.5s linear infinite reverse;display:flex;align-items:center;justify-content:center;}
+.arc-core{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.05) 60%, transparent 100%);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,215,0,0.3);animation:corePulse 2s ease-in-out infinite;}
+.arc-j{font-family:'Orbitron',sans-serif;font-size:2.5rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px var(--gold);}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes corePulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.3)}50%{box-shadow:0 0 40px rgba(255,215,0,0.7)}}
+
+.s2-title{font-family:'Orbitron',sans-serif;font-size:3.5rem;font-weight:900;color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,0.8);letter-spacing:0.4em;margin:0.5rem 0;}
+.loading-bar-wrap{width:300px;height:4px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);margin-top:1.5rem;overflow:hidden;}
+.loading-bar{height:100%;background:linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold));width:0;animation:loadBar 2.5s ease-out forwards;}
+@keyframes loadBar{to{width:100%}}
+.loading-text{font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:rgba(255,215,0,0.6);letter-spacing:0.2em;margin-top:0.75rem;animation:blink 1.2s step-end infinite;}
+
+/* ===================== SCREEN 3 ===================== */
+#s3{z-index:10;background:var(--dark);align-items:stretch;justify-content:flex-start;padding:0;overflow:hidden;}
+.s3-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%, #0d1b3e 0%, #050810 60%);z-index:0;}
+.s3-hex{position:absolute;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M30 2 L58 17 L58 35 L30 50 L2 35 L2 17Z' fill='none' stroke='rgba(255,215,0,0.04)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 52px;}
+
+.s3-header{position:relative;z-index:2;text-align:center;padding:2rem 2rem 1rem;border-bottom:1px solid rgba(255,215,0,0.2);}
+.s3-title{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);letter-spacing:0.3em;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.s3-subtitle{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:rgba(255,215,0,0.4);letter-spacing:0.3em;margin-top:0.3rem;}
+
+.agents-strip{position:relative;z-index:2;display:flex;gap:1rem;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,215,0,0.1);min-height:80px;flex-wrap:wrap;}
+.agent-strip-chip{padding:0.4rem 1.2rem;border:1px solid rgba(255,215,0,0.3);font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.15em;color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.03);transform:translateX(-40px);opacity:0;transition:all 0.5s;position:relative;overflow:hidden;}
+.agent-strip-chip.online{color:var(--gold);border-color:var(--gold);background:rgba(255,215,0,0.08);box-shadow:0 0 10px rgba(255,215,0,0.2);opacity:1;transform:translateX(0);}
+.agent-strip-chip.online::after{content:'●';margin-left:0.5rem;font-size:0.5rem;color:#00ff88;animation:blink 1s step-end infinite;}
+
+.s3-content{flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;}
+
+/* ===================== POPUP ===================== */
+.popup{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);opacity:0;transition:opacity 0.4s;pointer-events:none;}
+.popup.show{opacity:1;pointer-events:all;}
+.popup-box{border:1px solid var(--gold);background:rgba(5,8,16,0.97);padding:3rem 4rem;text-align:center;position:relative;max-width:500px;width:90%;transform:scale(0.8);transition:transform 0.4s;}
+.popup.show .popup-box{transform:scale(1);}
+.popup-box::before,.popup-box::after{content:'';position:absolute;width:30px;height:30px;border-color:var(--gold);border-style:solid;}
+.popup-box::before{top:-2px;left:-2px;border-width:2px 0 0 2px;}
+.popup-box::after{bottom:-2px;right:-2px;border-width:0 2px 2px 0;}
+.popup-scan{position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scanH 2s linear infinite;}
+@keyframes scanH{from{left:-100%}to{left:100%}}
+
+.popup-arc{width:120px;height:120px;margin:0 auto 1.5rem;}
+.popup-arc-r{width:120px;height:120px;border-radius:50%;border:2px solid transparent;border-top:2px solid var(--gold);border-right:2px solid var(--gold2);animation:spin 1.5s linear infinite;display:flex;align-items:center;justify-content:center;}
+.popup-arc-r2{width:90px;height:90px;border-radius:50%;border:1px solid transparent;border-bottom:1px solid var(--gold3);border-left:1px solid var(--gold);animation:spin 1s linear infinite reverse;display:flex;align-items:center;justify-content:center;}
+.popup-arc-core{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,215,0,0.4);animation:corePulse 2s ease-in-out infinite;}
+.popup-arc-letter{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;color:var(--gold);}
+
+.popup-agent-name{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:700;color:var(--gold);letter-spacing:0.3em;text-shadow:0 0 20px rgba(255,215,0,0.6);margin-bottom:0.5rem;}
+.popup-status{font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:rgba(255,215,0,0.5);letter-spacing:0.2em;}
+.popup-msg{font-family:'Rajdhani',sans-serif;font-size:1rem;color:rgba(255,215,0,0.7);margin-top:1rem;line-height:1.5;max-width:340px;}
+
+.assembled-msg{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,1),0 0 80px rgba(255,215,0,0.5);letter-spacing:0.15em;animation:titleGlow 1s ease-in-out infinite alternate;}
+.assembled-sub{font-family:'Rajdhani',sans-serif;font-size:1.1rem;color:rgba(255,215,0,0.7);margin-top:1rem;letter-spacing:0.15em;}
+
+/* ===================== SCREEN 4 - DASHBOARD ===================== */
+#s4{z-index:10;background:var(--dark);align-items:stretch;justify-content:flex-start;overflow-y:auto;flex-direction:column;}
+.s4-bg{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 0%, #0a1525 0%, #050810 60%);z-index:0;}
+.s4-hex{position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M30 2 L58 17 L58 35 L30 50 L2 35 L2 17Z' fill='none' stroke='rgba(255,215,0,0.03)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 52px;}
+
+.s4-nav{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;border-bottom:1px solid rgba(255,215,0,0.15);}
+.s4-nav-logo{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;color:var(--gold);letter-spacing:0.3em;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.s4-nav-right{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:rgba(255,215,0,0.5);letter-spacing:0.1em;text-align:right;}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#00ff88;margin-right:6px;animation:blink 2s step-end infinite;box-shadow:0 0 6px #00ff88;}
+
+.agents-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:1.5rem;padding:2rem 3rem;}
+.agent-card{border:1px solid rgba(255,215,0,0.2);background:rgba(255,215,0,0.03);padding:1.5rem;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
+.agent-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg, rgba(255,215,0,0.05) 0%, transparent 60%);opacity:0;transition:opacity 0.3s;}
+.agent-card:hover{border-color:var(--gold);background:rgba(255,215,0,0.06);box-shadow:0 0 30px rgba(255,215,0,0.15);}
+.agent-card:hover::before{opacity:1;}
+.agent-card.expanded{border-color:var(--gold);background:rgba(255,215,0,0.07);grid-column:1/-1;box-shadow:0 0 40px rgba(255,215,0,0.2);}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;}
+.card-icon{width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,215,0,0.4);display:flex;align-items:center;justify-content:center;background:rgba(255,215,0,0.08);font-size:1.2rem;}
+.card-badge{font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:3px 10px;border:1px solid #00ff88;color:#00ff88;letter-spacing:0.15em;background:rgba(0,255,136,0.05);}
+.card-name{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:700;color:var(--gold);letter-spacing:0.2em;margin-bottom:0.25rem;}
+.card-role{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(255,215,0,0.4);letter-spacing:0.15em;}
+.card-desc{font-family:'Rajdhani',sans-serif;font-size:0.95rem;color:rgba(255,215,0,0.65);line-height:1.6;margin:0.75rem 0;}
+.card-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1rem;}
+.stat-box{background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.1);padding:0.6rem;text-align:center;}
+.stat-val{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;color:var(--gold);}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(255,215,0,0.4);letter-spacing:0.1em;margin-top:3px;}
+.card-expand-data{display:none;margin-top:1.5rem;border-top:1px solid rgba(255,215,0,0.15);padding-top:1.5rem;}
+.agent-card.expanded .card-expand-data{display:block;}
+.expand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+.expand-item{border-left:2px solid rgba(255,215,0,0.4);padding-left:1rem;}
+.expand-item-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(255,215,0,0.4);letter-spacing:0.1em;text-transform:uppercase;}
+.expand-item-val{font-family:'Rajdhani',sans-serif;font-size:1rem;color:var(--gold3);margin-top:2px;font-weight:600;}
+
+.activity-bar{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:1rem;}
+.bar-seg{background:rgba(255,215,0,0.3);flex:1;border-top:1px solid rgba(255,215,0,0.6);transition:height 0.3s;}
+
+.scan-line{position:absolute;top:0;left:-100%;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.3),transparent);animation:scanCard 3s linear infinite;}
+@keyframes scanCard{from{top:0;opacity:1}to{top:100%;opacity:0}}
+
+/* corner accents on card */
+.agent-card .ca{position:absolute;width:12px;height:12px;border-color:var(--gold);border-style:solid;opacity:0.5;}
+.agent-card .ca.tl{top:0;left:0;border-width:1px 0 0 1px;}
+.agent-card .ca.tr{top:0;right:0;border-width:1px 1px 0 0;}
+.agent-card .ca.bl{bottom:0;left:0;border-width:0 0 1px 1px;}
+.agent-card .ca.br{bottom:0;right:0;border-width:0 1px 1px 0;}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- SCREEN 1 -->
+<div class="screen active" id="s1">
+  <div class="s1-grid"></div>
+  <div class="s1-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+  <h1 class="jarvis-title">JARVIS</h1>
+  <div class="protocol-box">
+    <div class="protocol-scan"></div>
+    <div class="protocol-text">◈ INITIATING AGENT PROTOCOLS ◈</div>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="screen" id="s2">
+  <div class="s2-hex"></div>
+  <div class="login-arc">
+    <div class="arc-inner">
+      <div class="arc-inner2">
+        <div class="arc-core"><span class="arc-j">J</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="s2-title">JARVIS</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="lbar"></div></div>
+  <div class="loading-text" id="ltext">INITIALIZING SYSTEMS...</div>
+</div>
+
+<!-- SCREEN 3 -->
+<div class="screen" id="s3">
+  <div class="s3-bg"></div>
+  <div class="s3-hex"></div>
+  <div class="s3-header">
+    <div class="s3-title">◈ JARVIS PROTOCOLS ◈</div>
+    <div class="s3-subtitle">AGENT COMMAND INTERFACE — AUTHORIZATION LEVEL: ALPHA</div>
+  </div>
+  <div class="agents-strip" id="agents-strip">
+    <div class="agent-strip-chip" id="chip-0">FRIDAY</div>
+    <div class="agent-strip-chip" id="chip-1">APPIAN</div>
+    <div class="agent-strip-chip" id="chip-2">NEURA</div>
+    <div class="agent-strip-chip" id="chip-3">PROCESS MON.</div>
+    <div class="agent-strip-chip" id="chip-4">RECORD MON.</div>
+  </div>
+  <div class="s3-content">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:rgba(255,215,0,0.3);letter-spacing:0.2em;text-align:center;animation:blink 1.5s step-end infinite;">AWAITING AGENT AUTHENTICATION...</div>
+  </div>
+</div>
+
+<!-- SCREEN 4 -->
+<div class="screen" id="s4">
+  <div class="s4-bg"></div>
+  <div class="s4-hex"></div>
+  <nav class="s4-nav">
+    <div class="s4-nav-logo">JARVIS</div>
+    <div class="s4-nav-right">
+      <div><span class="status-dot"></span>ALL SYSTEMS OPERATIONAL</div>
+      <div style="margin-top:4px;font-size:0.7rem;">5 AGENTS ACTIVE</div>
+    </div>
+  </nav>
+  <div style="position:relative;z-index:2;padding:2rem 3rem 0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(255,215,0,0.4);letter-spacing:0.2em;">
+    SELECT AGENT TO VIEW FULL INTELLIGENCE REPORT
+  </div>
+  <div class="agents-grid" id="agents-grid"></div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <div class="popup-scan"></div>
+    <div id="popup-content"></div>
+  </div>
+</div>
+
+<script>
+const getVoice = () => {
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v => v.name.includes('Google UK English Male') || v.name.includes('Daniel') || v.name.includes('Microsoft David') || v.name.includes('Alex'))
+    || vs.find(v => v.lang && v.lang.startsWith('en')) || vs[0];
+};
+
+const speak = (text) => new Promise(resolve => {
+  if (!window.speechSynthesis) { resolve(); return; }
+  speechSynthesis.cancel();
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.88; u.pitch = 0.82; u.volume = 1;
+    const v = getVoice(); if (v) u.voice = v;
+    const keepAlive = setInterval(() => {
+      if (!speechSynthesis.speaking) { clearInterval(keepAlive); return; }
+      speechSynthesis.pause(); speechSynthesis.resume();
+    }, 10000);
+    u.onend = () => { clearInterval(keepAlive); setTimeout(resolve, 300); };
+    u.onerror = () => { clearInterval(keepAlive); setTimeout(resolve, 300); };
+    speechSynthesis.speak(u);
+  }, 400);
+});
+
+// particle bg
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+const resize = () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; };
+resize(); window.addEventListener('resize', resize);
+for(let i=0;i<80;i++) particles.push({x:Math.random()*2000,y:Math.random()*1200,r:Math.random()*1.5,s:Math.random()*0.3+0.1,a:Math.random()*Math.PI*2,op:Math.random()*0.5+0.1});
+const animBg = () => {
+  ctx.clearRect(0,0,W,H);
+  particles.forEach(p=>{
+    p.y -= p.s; p.x += Math.sin(p.a)*0.3; p.a+=0.01;
+    if(p.y<0)p.y=H;
+    ctx.beginPath();ctx.arc(p.x%W,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,215,0,${p.op})`;ctx.fill();
+  });
+  requestAnimationFrame(animBg);
+};
+animBg();
+
+const agents = [
+  {name:'Friday',initial:'F',role:'DAILY INTELLIGENCE',speakMsg:'Friday online, Daily intelligence free, all systems active.',
+   desc:'Real-time daily intelligence briefings, news aggregation, and situational awareness across all monitored domains.',
+   stats:[{v:'247',l:'INTEL FEEDS'},{v:'100%',l:'UPTIME'},{v:'12ms',l:'RESPONSE'},{v:'3.2K',l:'DAILY BRIEFS'}],
+   extra:[{l:'Active Monitors',v:'247 streams'},{l:'Last Brief',v:'2 minutes ago'},{l:'Priority Alerts',v:'0 critical'},{l:'Coverage',v:'Global 94%'},{l:'Accuracy Rate',v:'98.7%'},{l:'Data Sources',v:'312 verified'}],
+   bars:[60,80,55,90,70,85,75,95,65,80,90,75]},
+  {name:'Appian',initial:'A',role:'AUTOMATION ENGINE',speakMsg:'Appian online, 12 automation running, all workflows holding on your command.',
+   desc:'Enterprise workflow automation engine managing 12 active automation chains across all operational departments.',
+   stats:[{v:'12',l:'AUTOMATIONS'},{v:'98%',l:'SUCCESS RATE'},{v:'0',l:'FAILURES'},{v:'1.4K',l:'TASKS/HR'}],
+   extra:[{l:'Active Workflows',v:'12 running'},{l:'Pending Triggers',v:'8 queued'},{l:'Last Execution',v:'43 seconds ago'},{l:'Throughput',v:'1,412 tasks/hr'},{l:'Error Rate',v:'0.03%'},{l:'Queue Depth',v:'0 blocked'}],
+   bars:[70,90,80,60,95,75,85,70,88,92,78,85]},
+  {name:'Neura',initial:'N',role:'PROJECT INTELLIGENCE',speakMsg:'Neura online, all projects tracked and accounted for. What are we building today?',
+   desc:'AI-driven project tracking and resource intelligence. Full visibility across all ongoing build cycles and milestones.',
+   stats:[{v:'34',l:'PROJECTS'},{v:'87%',l:'ON TRACK'},{v:'5',l:'MILESTONES'},{v:'99',l:'RESOURCES'}],
+   extra:[{l:'Active Projects',v:'34 in flight'},{l:'At Risk',v:'4 flagged'},{l:'This Sprint',v:'18 deliverables'},{l:'Team Capacity',v:'84%'},{l:'Velocity Trend',v:'↑ +12%'},{l:'Next Deadline',v:'In 6 hours'}],
+   bars:[75,65,85,80,70,90,75,60,85,78,88,70]},
+  {name:'Process Monitoring',initial:'P',role:'PROCESS OVERSIGHT',speakMsg:'Process Monitoring is online, all processes running efficiently. Found 9 incomplete processes in the system.',
+   desc:'Continuous oversight of all system processes. Currently tracking 9 incomplete processes requiring resolution.',
+   stats:[{v:'9',l:'INCOMPLETE'},{v:'241',l:'RUNNING'},{v:'4',l:'WARNINGS'},{v:'0',l:'CRITICAL'}],
+   extra:[{l:'Total Processes',v:'250 tracked'},{l:'Healthy',v:'241 running'},{l:'Incomplete',v:'9 flagged'},{l:'Warnings',v:'4 non-critical'},{l:'Avg Runtime',v:'2.3 hours'},{l:'CPU Load',v:'34% nominal'}],
+   bars:[80,75,90,65,80,85,70,88,75,82,78,90]},
+  {name:'Record Monitoring',initial:'R',role:'RECORDS INTELLIGENCE',speakMsg:'All records found synced in the system. 2 records have precedence missing found.',
+   desc:'Full-spectrum record synchronization and integrity verification. 2 records flagged for missing precedence data.',
+   stats:[{v:'2',l:'PRECEDENCE ERR'},{v:'100%',l:'SYNCED'},{v:'18K',l:'RECORDS'},{v:'0',l:'CONFLICTS'}],
+   extra:[{l:'Total Records',v:'18,429 synced'},{l:'Precedence Errors',v:'2 flagged'},{l:'Last Sync',v:'18 seconds ago'},{l:'Integrity Score',v:'99.98%'},{l:'Data Freshness',v:'Real-time'},{l:'Audit Trail',v:'Complete'}],
+   bars:[90,85,75,80,88,70,85,92,78,85,80,88]},
+];
+
+const screens = {1:document.getElementById('s1'),2:document.getElementById('s2'),3:document.getElementById('s3'),4:document.getElementById('s4')};
+const popup = document.getElementById('popup');
+let current = 1;
+const goTo = (n) => { screens[current].classList.remove('active'); screens[n].classList.add('active'); current=n; };
+
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+const waitAndSpeak = async (text, delay=300) => { await wait(delay); await speak(text); };
+
+// Voices must be loaded before sequence starts
+const voicesReady = () => new Promise(resolve => {
+  const vs = speechSynthesis.getVoices();
+  if (vs.length > 0) { resolve(); return; }
+  speechSynthesis.addEventListener('voiceschanged', resolve, { once: true });
+  setTimeout(resolve, 2000); // fallback
+});
+
+async function runSequence(){
+  await voicesReady();
+  // Screen 1: 3s
+  speak('Agent Assemble');
+  await wait(3500);
+
+  // Screen 2
+  goTo(2);
+  document.getElementById('lbar').style.animation='loadBar 2.5s ease-out forwards';
+  const loadMsgs=['INITIALIZING SYSTEMS...','LOADING PROTOCOLS...','CALIBRATING INTERFACES...','JARVIS ONLINE'];
+  let li=0;
+  const ltxt=document.getElementById('ltext');
+  const ltimer=setInterval(()=>{ltxt.textContent=loadMsgs[Math.min(li++,loadMsgs.length-1)];},700);
+  await waitAndSpeak('Jarvis online. All agents reporting. 5 agents standing by.', 400);
+  clearInterval(ltimer);
+  await wait(800);
+
+  // Screen 3
+  goTo(3);
+  await wait(800);
+
+  // Show agents one by one
+  for(let i=0;i<agents.length;i++){
+    const a=agents[i];
+    // show popup
+    document.getElementById('popup-content').innerHTML=`
+      <div class="popup-arc">
+        <div class="popup-arc-r"><div class="popup-arc-r2"><div class="popup-arc-core"><span class="popup-arc-letter">${a.initial}</span></div></div></div>
+      </div>
+      <div class="popup-agent-name">${a.name.toUpperCase()}</div>
+      <div class="popup-status">◈ AUTHENTICATION IN PROGRESS ◈</div>
+    `;
+    popup.classList.add('show');
+    await wait(600);
+    document.getElementById('popup-content').innerHTML+=`<div class="popup-msg" id="pmsg-${i}"></div>`;
+    const msgEl = document.getElementById(`pmsg-${i}`);
+    const fullText = a.speakMsg;
+    // typewriter runs in parallel with speech
+    let ci=0;
+    const typeIt = () => { if(ci<=fullText.length){ msgEl.textContent=fullText.slice(0,ci++)+'▌'; setTimeout(typeIt, 40); } else { msgEl.textContent=fullText; } };
+    typeIt();
+    await speak(fullText);
+    msgEl.textContent = fullText;
+    // activate strip chip
+    const chip=document.getElementById('chip-'+i);
+    chip.classList.add('online');
+    await wait(500);
+    popup.classList.remove('show');
+    await wait(400);
+  }
+
+  // Assembled
+  document.getElementById('popup-content').innerHTML=`
+    <div class="assembled-msg">ASSEMBLED</div>
+    <div class="assembled-sub">◈ ALL 5 AGENTS AT FULL OPERATIONAL CAPACITY ◈</div>
+  `;
+  popup.classList.add('show');
+  await waitAndSpeak('All 5 agents are assembled. Groups are at full operational capacity.',400);
+  await wait(1500);
+  popup.classList.remove('show');
+  await wait(600);
+
+  // Screen 4 — build dashboard
+  buildDashboard();
+  goTo(4);
+}
+
+function buildDashboard(){
+  const grid=document.getElementById('agents-grid');
+  grid.innerHTML='';
+  agents.forEach((a,i)=>{
+    const card=document.createElement('div');
+    card.className='agent-card';
+    card.innerHTML=`
+      <div class="ca tl"></div><div class="ca tr"></div><div class="ca bl"></div><div class="ca br"></div>
+      <div class="scan-line"></div>
+      <div class="card-top">
+        <div>
+          <div class="card-icon">${a.initial}</div>
+        </div>
+        <div class="card-badge">● ONLINE</div>
+      </div>
+      <div class="card-name">${a.name.toUpperCase()}</div>
+      <div class="card-role">${a.role}</div>
+      <div class="card-desc">${a.desc}</div>
+      <div class="card-stats">
+        ${a.stats.map(s=>`<div class="stat-box"><div class="stat-val">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join('')}
+      </div>
+      <div style="margin-top:1rem;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(255,215,0,0.35);letter-spacing:0.1em;margin-bottom:4px;">ACTIVITY — LAST 12HR</div>
+      <div class="activity-bar">${a.bars.map(h=>`<div class="bar-seg" style="height:${h}%"></div>`).join('')}</div>
+      <div class="card-expand-data">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(255,215,0,0.5);letter-spacing:0.15em;margin-bottom:1rem;">◈ FULL INTELLIGENCE REPORT</div>
+        <div class="expand-grid">
+          ${a.extra.map(e=>`<div class="expand-item"><div class="expand-item-label">${e.l}</div><div class="expand-item-val">${e.v}</div></div>`).join('')}
+        </div>
+        <div style="margin-top:1.5rem;font-family:'Rajdhani',sans-serif;font-size:0.9rem;color:rgba(255,215,0,0.5);border-top:1px solid rgba(255,215,0,0.1);padding-top:1rem;">
+          Agent ${a.name} is operating within normal parameters. ${a.stats[0].v} ${a.stats[0].l.toLowerCase()} recorded. All systems nominal.
+        </div>
+      </div>
+    `;
+    card.addEventListener('click',()=>{
+      const wasExp=card.classList.contains('expanded');
+      document.querySelectorAll('.agent-card.expanded').forEach(c=>c.classList.remove('expanded'));
+      if(!wasExp){card.classList.add('expanded');speak(`${a.name} intelligence report loaded.`);}
+    });
+    grid.appendChild(card);
+  });
+}
+
+// Chrome requires a user gesture before speech synthesis works
+window.addEventListener('load', () => {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#050810;flex-direction:column;gap:1.5rem;cursor:pointer;';
+  overlay.innerHTML = `
+    <div style="font-family:Orbitron,sans-serif;font-size:clamp(3rem,10vw,7rem);font-weight:900;color:#FFD700;text-shadow:0 0 40px rgba(255,215,0,0.8);letter-spacing:0.3em;animation:titleGlow 2s ease-in-out infinite alternate;">JARVIS</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:rgba(255,215,0,0.5);letter-spacing:0.3em;animation:blink 1.2s step-end infinite;">[ CLICK ANYWHERE TO ACTIVATE ]</div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', () => {
+    // Warm up speech synthesis with a silent utterance (Chrome requirement)
+    const warmup = new SpeechSynthesisUtterance(' ');
+    warmup.volume = 0;
+    speechSynthesis.speak(warmup);
+    overlay.style.transition = 'opacity 0.6s';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.remove(); runSequence(); }, 600);
+  }, { once: true });
+});
+</script>
+</body>
+</html>

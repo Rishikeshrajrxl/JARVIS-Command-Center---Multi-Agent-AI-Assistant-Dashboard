@@ -1,0 +1,470 @@
+body{
+  margin:0;
+  background:#050505;
+  color:#FFD700;
+  overflow:hidden;
+  font-family:'Segoe UI',sans-serif;
+}
+
+/* APP */
+
+.app{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  overflow:hidden;
+}
+
+/* MESSAGE */
+
+.message-overlay{
+
+  position:absolute;
+
+  top:8%;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  font-size:48px;
+
+  font-weight:700;
+
+  letter-spacing:4px;
+
+  color:#FFD700;
+
+  text-align:center;
+
+  text-shadow:
+    0 0 10px #FFD700,
+    0 0 20px #FFD700,
+    0 0 40px #FFD700,
+    0 0 80px #FFD700;
+
+  animation:pulseText 2s infinite;
+
+  z-index:999;
+}
+
+/* HUD */
+
+.hud{
+
+  position:absolute;
+
+  padding:15px 20px;
+
+  border:1px solid rgba(255,215,0,.3);
+
+  background:rgba(255,255,255,.04);
+
+  backdrop-filter:blur(12px);
+
+  box-shadow:
+    0 0 20px rgba(255,215,0,.3);
+
+  border-radius:12px;
+
+  color:#FFD700;
+}
+
+.hud-left{
+  left:20px;
+  top:20px;
+}
+
+.hud-right{
+  right:20px;
+  top:20px;
+}
+
+/* LOG PANEL */
+
+.diagnostics{
+
+  position:absolute;
+
+  left:20px;
+
+  top:160px;
+
+  width:380px;
+
+  height:340px;
+
+  overflow:hidden;
+
+  border:1px solid rgba(255,215,0,.25);
+
+  padding:20px;
+
+  border-radius:12px;
+
+  background:rgba(255,255,255,.03);
+
+  backdrop-filter:blur(10px);
+
+  box-shadow:
+    0 0 20px rgba(255,215,0,.25);
+}
+
+.diagnostics h3{
+  margin-top:0;
+  color:#FFD700;
+}
+
+/* AI CORE */
+
+.core-wrapper{
+
+  position:absolute;
+
+  top:50%;
+
+  left:50%;
+
+  transform:translate(-50%,-50%);
+}
+
+.ai-core{
+
+  width:420px;
+
+  height:420px;
+
+  position:relative;
+}
+
+.ring{
+
+  position:absolute;
+
+  border-radius:50%;
+
+  border:2px solid #FFD700;
+
+  box-shadow:
+    0 0 20px #FFD700;
+}
+
+.ring1{
+
+  width:420px;
+
+  height:420px;
+
+  animation:spin 20s linear infinite;
+}
+
+.ring2{
+
+  width:340px;
+
+  height:340px;
+
+  top:40px;
+
+  left:40px;
+
+  animation:spinReverse 12s linear infinite;
+}
+
+.ring3{
+
+  width:260px;
+
+  height:260px;
+
+  top:80px;
+
+  left:80px;
+
+  animation:spin 8s linear infinite;
+}
+
+.ring4{
+
+  width:180px;
+
+  height:180px;
+
+  top:120px;
+
+  left:120px;
+
+  animation:pulseRing 2s infinite;
+}
+
+.center-core{
+
+  width:90px;
+
+  height:90px;
+
+  background:#FFD700;
+
+  border-radius:50%;
+
+  position:absolute;
+
+  left:165px;
+
+  top:165px;
+
+  box-shadow:
+    0 0 20px #FFD700,
+    0 0 40px #FFD700,
+    0 0 80px #FFD700;
+}
+
+/* ACTIVE AGENTS */
+
+.agent-background{
+
+  position:absolute;
+
+  top:120px;
+
+  width:100%;
+
+  display:flex;
+
+  justify-content:center;
+
+  flex-wrap:wrap;
+
+  gap:18px;
+
+  z-index:1;
+}
+
+.agent-background-item{
+
+  color:rgba(255,215,0,.18);
+
+  font-size:34px;
+
+  text-transform:uppercase;
+
+  letter-spacing:2px;
+
+  text-shadow:
+    0 0 15px #FFD700;
+
+  animation:slideInAgent 1s ease;
+}
+
+/* AGENT POPUP */
+
+.agent-popup{
+
+  position:absolute;
+
+  bottom:120px;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  min-width:350px;
+
+  text-align:center;
+
+  padding:25px;
+
+  border-radius:16px;
+
+  border:1px solid rgba(255,215,0,.4);
+
+  background:rgba(255,255,255,.05);
+
+  backdrop-filter:blur(14px);
+
+  color:#FFD700;
+
+  box-shadow:
+    0 0 30px rgba(255,215,0,.4);
+
+  animation:popupShow .7s ease;
+}
+
+.popup-logo{
+
+  width:80px;
+
+  height:80px;
+
+  border-radius:50%;
+
+  border:2px solid #FFD700;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  margin:auto;
+
+  margin-bottom:15px;
+
+  font-size:36px;
+
+  font-weight:bold;
+
+  animation:spin 6s linear infinite;
+}
+
+/* PROGRESS */
+
+.progress-container{
+
+  position:absolute;
+
+  bottom:40px;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  width:550px;
+
+  height:26px;
+
+  border-radius:20px;
+
+  overflow:hidden;
+
+  border:1px solid #FFD700;
+
+  background:#111;
+}
+
+.progress-fill{
+
+  height:100%;
+
+  background:#FFD700;
+
+  box-shadow:
+    0 0 20px #FFD700;
+}
+
+.progress-container span{
+
+  position:absolute;
+
+  left:50%;
+
+  top:2px;
+
+  transform:translateX(-50%);
+
+  color:white;
+
+  font-weight:bold;
+
+  text-shadow:
+    0 0 10px white;
+}
+
+/* SCANNER */
+
+.scanner{
+
+  position:absolute;
+
+  bottom:0;
+
+  width:100%;
+
+  height:4px;
+
+  background:#FFD700;
+
+  box-shadow:
+    0 0 15px #FFD700;
+
+  animation:scan 3s linear infinite;
+}
+
+/* ANIMATIONS */
+
+@keyframes spin{
+
+  from{
+    transform:rotate(0deg);
+  }
+
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+@keyframes spinReverse{
+
+  from{
+    transform:rotate(360deg);
+  }
+
+  to{
+    transform:rotate(0deg);
+  }
+}
+
+@keyframes pulseRing{
+
+  50%{
+    transform:scale(1.12);
+  }
+}
+
+@keyframes pulseText{
+
+  50%{
+    opacity:.8;
+  }
+}
+
+@keyframes popupShow{
+
+  from{
+    opacity:0;
+    transform:
+      translateX(-50%)
+      translateY(40px);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateX(-50%)
+      translateY(0);
+  }
+}
+
+@keyframes slideInAgent{
+
+  from{
+    opacity:0;
+    transform:translateX(-120px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+
+@keyframes scan{
+
+  from{
+    transform:translateX(-100%);
+  }
+
+  to{
+    transform:translateX(100%);
+  }
+}
