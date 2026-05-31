@@ -2,6 +2,10 @@
 
 > A futuristic AI command center inspired by JARVIS, featuring voice-guided startup sequences, multi-agent orchestration, real-time status monitoring, and an immersive dashboard experience.
 
+## Preview
+
+![JARVIS Preview](/JARVIS-—-Agent-Command-Interface.gif)
+
 ## 🎥 JARVIS Command Center Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/O-VeudYsRl8/maxresdefault.jpg)](https://youtu.be/O-VeudYsRl8)
